@@ -22,12 +22,15 @@
 (require 'cl-lib)
 
 ;; TODO run function and check?
-(cl-defun check-output (cmd &key (input nil))
+(cl-defun check-output (cmd &key (input nil) (cwd nil))
   ;; for fuck's sake, messages buffer isn't writable..
   ;; TODO FIXME decouple from stderr, output it to messages somehow
   ;; TODO real-destination?
   (cl-assert input t "Please set input")
-  (let (return-code stdout stderr)
+  (let (return-code
+        stdout
+        stderr
+        (default-directory (or cwd default-directory)))
     (setq stdout (with-output-to-string
                    (with-temp-buffer
                      (insert input)
