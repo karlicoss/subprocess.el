@@ -24,18 +24,24 @@
 ;; TODO run function and check?
 (cl-defun check-output (cmd &key (input nil))
   ;; for fuck's sake, messages buffer isn't writable..
-  ;; TODO FIXME check return code?
+  ;; TODO FIXME decouple from stderr, output it to messages somehow
   ;; TODO real-destination?
-  ;; TODO FIXME check input
-  ;; TODO decouple from stderr, output it to messages somehow
+  (cl-assert input t "Please set input")
   (with-output-to-string
-    (apply
-     #'call-process
-     (car cmd)
-     nil ;; TODO stdin?
-     standard-output
-     nil
-     (cdr cmd))))
+    (with-temp-buffer ;; TODO we don't really need temp buffer if there is no input..
+      (insert input)
+      (let (return-code)
+        (setq return-code
+              (apply
+              ;; call-process can only read from stdin..
+               #'call-process-region
+               nil nil
+               (car cmd)
+               nil             ;; delete input?
+               standard-output ;; destination
+               nil             ;; display?
+               (cdr cmd)))
+        (cl-assert (= return-code 0) t "Program failed with return code %d")))))
 
 
 (provide 'subprocess)
